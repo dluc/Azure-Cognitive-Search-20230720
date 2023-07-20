@@ -1,0 +1,61 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"languageName":"csharp","name":"csharp"}]}}
+
+#!markdown
+
+## Load settings from .env file
+
+#!csharp
+
+#r "nuget: dotenv.net, 3.1.2"
+dotenv.net.DotEnv.Load();
+var env = dotenv.net.DotEnv.Read();
+
+#!markdown
+
+## Prepare kernel using Azure Cognitive Search
+
+#!csharp
+
+#r "nuget: Microsoft.SemanticKernel, 0.17.230718.1-preview"
+#r "nuget: Microsoft.SemanticKernel.Connectors.Memory.AzureSearch, 0.17.230718.1-preview"
+
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Memory.AzureSearch;
+using Microsoft.SemanticKernel.Memory;
+
+var kernel = Kernel.Builder     
+    
+    // Use Azure Cognitive Search for the kernel Memory
+    .WithMemoryStorage(new AzureSearchMemoryStore(
+        env["AZURE_SEARCH_ENDPOINT"],
+        env["AZURE_SEARCH_API_KEY"]))
+
+    // Use Azure OpenAI for Embeddings (mode: text-embedding-ada-002)
+    .WithAzureTextEmbeddingGenerationService(
+        deploymentName: "text-embedding-ada-002",
+        endpoint: env["AZURE_OPENAI_ENDPOINT"],
+        apiKey: env["AZURE_OPENAI_API_KEY"])
+        
+    .Build();
+
+#!markdown
+
+## Use SK Memory to store some information into Azure Cognitive Search
+
+#!csharp
+
+var memories = new Dictionary<string, string>
+{
+    { "rec1", "My name is Andrea" },
+    { "rec2", "I currently work as a tour guide" },
+    { "rec3", "I've been living in Seattle since 2005" },
+    { "rec4", "I visited France and Italy five times since 2015" },
+    { "rec5", "My family is from New York" },
+};
+
+foreach(var memory in memories)
+{
+    await kernel.Memory.SaveInformationAsync(collection: "aboutMeUser001", id: memory.Key, text: memory.Value);
+}

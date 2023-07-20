@@ -1,0 +1,79 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"languageName":"csharp","name":"csharp"}]}}
+
+#!markdown
+
+## Load settings from .env file
+
+#!csharp
+
+#r "nuget: dotenv.net, 3.1.2"
+dotenv.net.DotEnv.Load();
+var env = dotenv.net.DotEnv.Read();
+
+#!markdown
+
+## Prepare kernel using Azure Cognitive Search
+
+#!csharp
+
+#r "nuget: Microsoft.SemanticKernel, 0.17.230718.1-preview"
+#r "nuget: Microsoft.SemanticKernel.Connectors.Memory.AzureSearch, 0.17.230718.1-preview"
+
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Memory.AzureSearch;
+using Microsoft.SemanticKernel.Memory;
+
+var kernel = Kernel.Builder
+    
+    // Use Azure Cognitive Search for the kernel Memory
+    .WithMemoryStorage(new AzureSearchMemoryStore(
+        env["AZURE_SEARCH_ENDPOINT"],
+        env["AZURE_SEARCH_API_KEY"]))
+
+    // Use Azure OpenAI for Embeddings (mode: text-embedding-ada-002)
+    .WithAzureTextEmbeddingGenerationService(
+        deploymentName: "text-embedding-ada-002",
+        endpoint: env["AZURE_OPENAI_ENDPOINT"],
+        apiKey: env["AZURE_OPENAI_API_KEY"])
+
+    // Use Azure OpenAI for Semantic Functions (model = gpt-35-turbo)
+    .WithAzureChatCompletionService(
+        deploymentName: "gpt-35-turbo",
+        endpoint: env["AZURE_OPENAI_ENDPOINT"],
+        apiKey: env["AZURE_OPENAI_API_KEY"])
+        
+    .Build();
+
+#!markdown
+
+## Grounding prompts (semantic functions) with Memory "recall"
+
+#!csharp
+
+using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.SkillDefinition;
+
+kernel.ImportSkill(new TextMemorySkill());
+
+const string skPrompt = @"
+Considering these facts
+
+About me: {{recall 'where did I grow up?'}}
+About me: {{recall 'where do I live?'}}
+
+Question: {{$input}}
+
+Provide a concise answer ('Answer: ') and a separate explanation ('Explanation: '), in two lines.
+";
+
+var skFunction = kernel.CreateSemanticFunction(skPrompt, maxTokens: 200);
+
+#!csharp
+
+var context = kernel.CreateNewContext();
+context[TextMemorySkill.CollectionParam] = "aboutMeUser001";
+
+var result = await skFunction.InvokeAsync("Do I live in the same town where I grew up?", context);
+Console.WriteLine(result);
