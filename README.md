@@ -13,3 +13,64 @@ Recommended: [.NET 7+](https://dotnet.microsoft.com/download/dotnet)
 [VS Code](https://code.visualstudio.com/download) +
 [Polyglot extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode)
 
+# Sneak peek
+
+## Python
+
+```python
+kernel.import_skill(TextMemorySkill())
+
+sk_prompt = """
+Considering these facts
+
+About me: {{recall 'where did I grow up?'}}
+About me: {{recall 'where do I live?'}}
+
+Question: {{$input}}
+
+Provide a concise answer ('Answer: ') and a separate explanation ('Explanation: '), in two lines.
+"""
+
+sk_function = kernel.create_semantic_function(prompt_template=sk_prompt, max_tokens=200)
+```
+```python
+context= kernel.create_new_context()
+context[TextMemorySkill.COLLECTION_PARAM] = "aboutMeUser002";
+
+result = await sk_function.invoke_async(input="Do I live in the same town where I grew up?", context=context)
+print(result)
+```
+```
+Answer: No.
+Explanation: The fact that the family is from New York and the person has been living in Seattle since 2005 suggests that they did not grow up in Seattle.
+```
+
+## C#
+
+```csharp
+kernel.ImportSkill(new TextMemorySkill());
+
+const string skPrompt = @"
+Considering these facts
+
+About me: {{recall 'where did I grow up?'}}
+About me: {{recall 'where do I live?'}}
+
+Question: {{$input}}
+
+Provide a concise answer ('Answer: ') and a separate explanation ('Explanation: '), in two lines.
+";
+
+var skFunction = kernel.CreateSemanticFunction(skPrompt, maxTokens: 200);
+```
+```csharp
+var context = kernel.CreateNewContext();
+context[TextMemorySkill.CollectionParam] = "aboutMeUser001";
+
+var result = await skFunction.InvokeAsync("Do I live in the same town where I grew up?", context);
+Console.WriteLine(result);
+```
+```
+Answer: No.
+Explanation: The fact that the family is from New York and the person has been living in Seattle since 2005 suggests that they did not grow up in Seattle.
+```
