@@ -48,7 +48,7 @@ Explanation: The fact that the family is from New York and the person has been l
 ## C#
 
 ```csharp
-kernel.ImportSkill(new TextMemorySkill());
+kernel.ImportSkill(new TextMemorySkill(kernel.Memory));
 
 const string skPrompt = @"
 Considering these facts
