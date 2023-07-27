@@ -17,6 +17,10 @@ Recommended: [.NET 7+](https://dotnet.microsoft.com/download/dotnet)
 
 ## Python
 
+Packages:
+
+* semantic-kernel 0.3.4.dev0
+
 ```python
 kernel.import_skill(TextMemorySkill())
 
@@ -46,6 +50,11 @@ Explanation: The fact that the family is from New York and the person has been l
 ```
 
 ## C#
+
+Nugets:
+
+* Microsoft.SemanticKernel, 0.18.230725.3-preview
+* Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch, 0.18.230725.3-preview
 
 ```csharp
 kernel.ImportSkill(new TextMemorySkill(kernel.Memory));
