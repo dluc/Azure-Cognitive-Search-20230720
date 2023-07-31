@@ -1,5 +1,7 @@
 # Bringing Memory to your AI Apps with Azure Cognitive Search! | Intro to Semantic Kernel
 
+Video:
+
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/4bvnDf0F6yk/0.jpg)](https://www.youtube.com/watch?v=4bvnDf0F6yk)
 
 # Python Setup
